@@ -47,10 +47,7 @@ def stats(message):
     if message.from_user.id == ADMIN_ID:
         bot.reply_to(message, f"📊 Nombre total d'abonnés : {len(abonnes)}")
     else:
-        bot.reply_to(message, "⛔ Tu n'as pas la permission de voir ")
-        @bot.message_handler(commands=['abonnes'])
-def nombre_abonnes(message):
-    bot.reply_to(message, f"📊 Nombre total d'abonnés : {len(abonnes)}")
+        bot.reply_to(message, "⛔ Tu n'as pas la permission de voir")
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback(call):
