@@ -48,6 +48,9 @@ def stats(message):
         bot.reply_to(message, f"📊 Nombre total d'abonnés : {len(abonnes)}")
     else:
         bot.reply_to(message, "⛔ Tu n'as pas la permission de voir ces stats.")
+        @bot.message_handler(commands=['abonnés'])
+def nombre_abonnes(message):
+    bot.reply_to(message, f"📊 Nombre total d'abonnés : {len(abonnes)}")
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback(call):
