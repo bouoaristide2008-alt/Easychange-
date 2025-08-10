@@ -1,2 +1,1 @@
-pyTelegramBotAPI  
-Flask==2.3.2
+web: gunicorn newfile:app
