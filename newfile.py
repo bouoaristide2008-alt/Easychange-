@@ -9,7 +9,7 @@ import json, os
 # === CONFIGURATION ===
 API_TOKEN = "7873815642:AAGQgBfsg4O3Qw0pJsdbA4isnprK3JRqX4w"
 ID_CANAL = -1002884958871  # Ton canal
-ADMIN_ID = 6357925694       # Mets ici TON ID Telegram
+ADMIN_ID = 123456789       # Mets ici TON ID Telegram
 
 bot = telebot.TeleBot(API_TOKEN)
 app = Flask(__name__)
@@ -47,7 +47,7 @@ def stats(message):
     if message.from_user.id == ADMIN_ID:
         bot.reply_to(message, f"📊 Nombre total d'abonnés : {len(abonnes)}")
     else:
-        bot.reply_to(message, "⛔ Tu n'as pas la permission de voir")
+        bot.reply_to(message, "⛔ Tu n'as pas la permission de voir ces stats.")
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback(call):
