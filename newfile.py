@@ -9,7 +9,7 @@ import json, os
 # === CONFIGURATION ===
 API_TOKEN = "7873815642:AAGQgBfsg4O3Qw0pJsdbA4isnprK3JRqX4w"
 ID_CANAL = -1002884958871  # Ton canal
-ADMIN_ID = 123456789       # Mets ici TON ID Telegram
+ADMIN_ID = 6357925694       # Mets ici TON ID Telegram
 
 bot = telebot.TeleBot(API_TOKEN)
 app = Flask(__name__)
