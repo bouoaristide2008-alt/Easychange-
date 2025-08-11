@@ -9,7 +9,7 @@ import json, os
 # === CONFIGURATION ===
 API_TOKEN = "7873815642:AAGQgBfsg4O3Qw0pJsdbA4isnprK3JRqX4w"
 ID_CANAL = -1002884958871  # Ton canal
-ADMIN_ID = 6357925694      # Mets ici TON ID Telegram
+ADMIN_ID = 6357925694       # Mets ici TON ID Telegram
 
 bot = telebot.TeleBot(API_TOKEN)
 app = Flask(__name__)
@@ -40,7 +40,7 @@ def menu_principal(message):
     markup = InlineKeyboardMarkup()
     markup.row(InlineKeyboardButton("💸 Transférer de l'argent", callback_data="transfert"))
     markup.row(InlineKeyboardButton("📞 Contacter le support", callback_data="support_menu"))
-    markup.row(InlineKeyboardButton("❓ Comment ça marche ?", callback_data="howto"))
+    markup.row(InlineKeyboardButton("ℹ️ Comment ça marche", callback_data="comment_ca_marche"))
     bot.send_message(message.chat.id, "📋 Menu principal :", reply_markup=markup)
 
 @bot.message_handler(commands=['stats'])
@@ -49,6 +49,29 @@ def stats(message):
         bot.reply_to(message, f"📊 Nombre total d'abonnés : {len(abonnes)}")
     else:
         bot.reply_to(message, "⛔ Tu n'as pas la permission de voir ces stats.")
+
+# --- Nouvelle commande broadcast ---
+@bot.message_handler(commands=['broadcast'])
+def broadcast_message(message):
+    if message.from_user.id != ADMIN_ID:
+        bot.reply_to(message, "⛔ Vous n'avez pas la permission d'utiliser cette commande.")
+        return
+    
+    text = message.text[len('/broadcast '):].strip()
+    if not text:
+        bot.reply_to(message, "❌ Veuillez spécifier un message à envoyer.\nUsage : /broadcast Ton message ici")
+        return
+    
+    count = 0
+    failed = 0
+    for user_id in abonnes:
+        try:
+            bot.send_message(user_id, f"📢 Message du bot :\n\n{text}")
+            count += 1
+        except Exception:
+            failed += 1
+    
+    bot.reply_to(message, f"✅ Message envoyé à {count} utilisateurs.\n❌ Échecs : {failed}")
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_callback(call):
@@ -91,9 +114,10 @@ def handle_callback(call):
                     now
                 ])
             recap = (
-                f"📤 Vous envoyez au {data_cmd['numero_credit']} depuis le {data_cmd['reseau_debit']}, "
-                f"à la date {now}.\n"
-                f"💰 Montant : {data_cmd['montant_net']} F (frais inclus : {data_cmd['montant_brut']} F)"
+                f"📤 Transfert de {data_cmd['montant_net']} F depuis {data_cmd['reseau_debit'].upper()} | {data_cmd['numero_debit']} "
+                f"vers {data_cmd['reseau_credit'].upper()} | {data_cmd['numero_credit']}.\n"
+                f"⏰ Date : {now}\n"
+                f"💰 Montant total débité (frais inclus) : {data_cmd['montant_brut']} F"
             )
             bot.send_message(ID_CANAL, recap)
             bot.send_message(call.message.chat.id, "✅ Commande enregistrée avec succès !")
@@ -115,22 +139,19 @@ def handle_callback(call):
         support_steps[user_id] = {"type": data, "step": 1}
         bot.edit_message_text("Merci de décrire votre problème en détail. Vous pouvez aussi ajouter des numéros, dates, captures, etc.", call.message.chat.id, call.message.id)
 
-    elif data == "howto":
-        guide = (
-            "🔎 *Comment ça marche — Guide complet*\n\n"
-            "1️⃣ *Transférer de l'argent* → Cliquez sur « Transférer de l'argent ».\n\n"
-            "2️⃣ *Choisir le réseau à débiter* → Sélectionnez MTN / MOOV / ORANGE / WAVE.\n\n"
-            "3️⃣ *Entrer le numéro à débiter* → 10 chiffres (doit commencer par 05, 01 ou 07).\n\n"
-            "4️⃣ *Choisir le réseau à créditer* → Sélectionnez le réseau destinataire.\n\n"
-            "5️⃣ *Entrer le numéro à créditer* → 10 chiffres.\n\n"
-            "6️⃣ *Entrer le montant* → Minimum 200 F, doit se terminer par 0. *Des frais de 5% seront ajoutés au total.*\n\n"
-            "7️⃣ *Vérifier le récapitulatif* puis cliquez sur *✅ Confirmer* pour valider l’opération.\n\n"
-            "🔐 *Conseils de sécurité* : vérifie toujours les numéros, ne partage pas d’OTP, prends une capture si besoin.\n\n"
-            "Si tu as un problème, utilise « Contacter le support »."
+    elif data == "comment_ca_marche":
+        texte = (
+            "ℹ️ *Comment fonctionne le bot ?*\n\n"
+            "1️⃣ Appuyez sur 💸 *Transférer de l'argent* pour commencer une transaction.\n"
+            "2️⃣ Choisissez le réseau à débiter, puis entrez le numéro débité.\n"
+            "3️⃣ Choisissez le réseau à créditer, puis entrez le numéro crédité.\n"
+            "4️⃣ Entrez le montant (minimum 200F, doit finir par 0).\n"
+            "5️⃣ Confirmez la commande.\n\n"
+            "Pour toute question, utilisez 📞 *Contacter le support*."
         )
         markup = InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("⬅️ Retour au menu", callback_data="retour_menu"))
-        bot.edit_message_text(guide, call.message.chat.id, call.message.id, parse_mode="Markdown", reply_markup=markup)
+        bot.edit_message_text(texte, call.message.chat.id, call.message.id, parse_mode="Markdown", reply_markup=markup)
 
 @bot.message_handler(func=lambda message: message.from_user.id in support_steps)
 def process_support_message(message):
