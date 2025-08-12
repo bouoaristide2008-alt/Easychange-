@@ -83,7 +83,7 @@ def handle_callback(call):
         for res in ["mtn", "moov", "orange", "wave"]:
             markup.add(InlineKeyboardButton(f"📶 {res.upper()}", callback_data=f"debit_{res}"))
         markup.add(InlineKeyboardButton("⬅️ Retour", callback_data="retour_menu"))
-        bot.edit_message_text("Depuis quel réseau souhaitez-vous être débité ?", call.message.chat.id, call.message.id, reply_markup=markup)
+        bot.edit_message_text(chat_id=call.message.chat.id, text="Depuis quel réseau souhaitez-vous être débité ?", reply_markup=markup)
 
     elif data.startswith("debit_"):
         reseau = data.split("_")[1]
